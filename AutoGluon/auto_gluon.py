@@ -2,10 +2,10 @@ from autogluon.tabular import TabularDataset, TabularPredictor
 import pandas as pd
 
 class AutoGluonEstimator():
-    def __init__(self, problem_type='Regressor', label='', eval_metric='RMSE', time_limit=60,
+    def __init__(self, problem_type='Regressor', label='', eval_metric='root_mean_squared_error', time_limit=60,
                  model_path='model/', task='CPU', num_workers=-1):
         self.name = "AutoGluon"+problem_type
-        self.type = problem_type
+        self.problem_type = problem_type
         self.label = label
         self.eval_metric = eval_metric
         self.time_limit = time_limit
@@ -14,9 +14,7 @@ class AutoGluonEstimator():
         self.num_workers = num_workers
         self.model = None
 
-        return self
-
-    def fit(self, X_train, y_train, X_val, y_val):
+    def fit(self, X_train, y_train, X_val=None, y_val=None):
         if self.problem_type=='Regressor':
             problem = 'regression'
         elif self.problem_type=='Classifier':
@@ -25,7 +23,10 @@ class AutoGluonEstimator():
             raise ValueError('Other problem types not supported here!')
 
         train_data = TabularDataset(pd.concat([X_train, y_train], axis=1))
-        val_data = TabularDataset(pd.concat([X_val, y_val], axis=1))
+        if X_val is not None:
+          val_data = TabularDataset(pd.concat([X_val, y_val], axis=1))
+        else:
+          val_data = None
 
         self.model = TabularPredictor(label=self.label, problem_type=problem, eval_metric=self.eval_metric,
                                       path=self.model_path)
